@@ -1,6 +1,108 @@
-{{ $page := .root }}
-{{ $section := .page }}
+{{ $ := .root }}
+{{ $page := .page }}
+{{ $columns := $page.Params.design.columns | default "2" }}
 
-<h2>{{$section.Title}}</h2>
+{{ $count := len $page.Params.experience }}
+{{ $items_count:= $page.Params.count }}
+{{ if eq $items_count 0 }}
+  {{ $items_count = 65535 }}
+{{ else }}
+  {{ $items_count = $items_count | default 5 }}
+{{ end }}
+{{ $items_sort := $page.Params.content.order | default "desc" }}
 
-<p>{{$section.Content}}</p>
+{{/* Sort */}}
+{{ $sort_by := $page.Params.sortby | default "date_end" }}
+{{ $query = sort $page.Params.experience $sort_by $items_sort }}
+
+{{/* Localisation */}}
+{{ $i18n_more := "more_experience" }}
+{{ $i18n_less := "less_experience" }}
+
+<!-- Experience widget -->
+<div class="col-12 {{if eq $columns "2"}}col-lg-8{{end}}">
+  {{ with $page.Content }}{{ . }}{{ end }}
+
+  {{/* Default to user's custom order (as requested in #1761) as Hugo doesn't support multiple sorts on params. */}}
+  {{ range $idx, $key := $query }}
+    <div class="row experience {{if ge $idx $items_count}}collapse{{end}}" {{if ge $idx $items_count}}id="allExp"{{end}}>
+      <!-- Timeline -->
+      <div class="col-auto text-center flex-column d-none d-sm-flex">
+        <div class="row h-50">
+          <div class="col {{if gt $idx 0}}border-right{{end}}">&nbsp;</div>
+          <div class="col">&nbsp;</div>
+        </div>
+        <div class="m-2">
+          <span class="badge badge-pill border {{if not .date_end}}exp-fill{{end}}">&nbsp;</span>
+        </div>
+        <div class="row h-50">
+          <div class="col {{if lt $idx (sub $exp_len 1)}}border-right{{end}}">&nbsp;</div>
+          <div class="col">&nbsp;</div>
+        </div>
+      </div>
+      <!-- Content -->
+      <div class="col py-2">
+        <div class="card">
+          <div class="card-body">
+
+            {{- if .company_logo}}
+              {{- $svg_icon := resources.Get (printf "media/icons/brands/%s.svg" .company_logo) -}}
+              {{ if not $svg_icon }}{{ errorf "Brand logo not found at `assets/media/icons/brands/%s.svg`" .company_logo }}{{end}}
+              <div class="d-flex align-content-start">
+                <div class="mr-2 mb-2">
+                  {{- with .company_url}}<a href="{{.}}" target="_blank" rel="noopener">{{end -}}
+                  <img src="{{ $svg_icon.RelPermalink }}" width="56px" height="56px" alt="{{.company | plainify}}">
+                  {{- with .company_url}}</a>{{end -}}
+                </div>
+                <div>
+            {{ end }}
+
+            <div class="section-subheading card-title exp-title text-muted my-0">{{.title | markdownify | emojify}}</div>
+            <div class="section-subheading card-title exp-company text-muted my-0">
+              {{- with .company_url}}<a href="{{.}}" target="_blank" rel="noopener">{{end}}{{.company | markdownify | emojify}}{{with .company_url}}</a>{{end -}}
+            </div>
+            <div class="text-muted exp-meta">
+              {{ (time .date_start).Format ($page.Params.date_format | default "January 2006") }} –
+              {{ if .date_end}}
+                {{ (time .date_end).Format ($page.Params.date_format | default "January 2006") }}
+              {{else}}
+                {{ i18n "present" | default "Present" }}
+              {{end}}
+              {{with .location}}
+                <span class="middot-divider"></span>
+                <span>{{.}}</span>
+              {{end}}
+            </div>
+
+            {{- if .company_logo}}
+                </div>
+              </div>
+            {{end}}
+
+            {{with .description}}<div class="card-text">{{. | markdownify | emojify}}</div>{{end}}
+          </div>
+        </div>
+        
+        {{ if eq $idx ( sub $exp_count 1 ) }}
+          {{/* Unfold link */}}
+          {{ $show_unfold_link := gt $count $items_count }}
+
+          {{ if $show_unfold_link }}
+            <div class="see-all">
+              <a data-toggle="collapse" href="#allExp" aria-expanded="false" aria-controls="allExp">
+                <span class="collapsed">
+                  {{ i18n $i18n_more | default "Show more" | emojify }}
+                  <i class="fas fa-angle-down"></i>
+                </span>
+                <span class="expanded">
+                  {{ i18n $i18n_less | default "Show less" | emojify }}
+                  <i class="fas fa-angle-up"></i>
+                </span>
+              </a>
+            </div>
+          {{ end }}
+        {{ end }}
+      </div>
+    </div>
+  {{end}}
+</div>

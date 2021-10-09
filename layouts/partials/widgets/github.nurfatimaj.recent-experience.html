@@ -13,7 +13,7 @@
 
 {{/* Sort */}}
 {{ $sort_by := $page.Params.sortby | default "date_end" }}
-{{ $query = sort $page.Params.experience $sort_by $items_sort }}
+{{ $query := sort $page.Params.experience $sort_by $items_sort }}
 
 {{/* Localisation */}}
 {{ $i18n_more := "more_experience" }}

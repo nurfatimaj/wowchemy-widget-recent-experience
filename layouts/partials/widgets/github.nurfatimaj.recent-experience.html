@@ -33,7 +33,7 @@
           <div class="col">&nbsp;</div>
         </div>
         <div class="m-2">
-          <span class="badge badge-pill border {{if not .date_end}}exp-fill{{end}}">&nbsp;</span>
+          <span class="badge badge-pill border {{if or (not .date_end) (gt (sub (time .date_end) now) 0) }}exp-fill{{end}}">&nbsp;</span>
         </div>
         <div class="row h-50">
           <div class="col {{if lt $idx (sub $count 1)}}border-right{{end}}">&nbsp;</div>

@@ -10,6 +10,7 @@
   {{ $items_count = $items_count | default 5 }}
 {{ end }}
 {{ $items_sort := $page.Params.content.order | default "desc" }}
+{{ $today := now }}
 
 {{/* Sort */}}
 {{ $sort_by := $page.Params.sortby | default "date_end" }}
@@ -33,7 +34,8 @@
           <div class="col">&nbsp;</div>
         </div>
         <div class="m-2">
-          <span class="badge badge-pill border {{if or (not .date_end) (gt (sub (time .date_end) now) 0) }}exp-fill{{end}}">&nbsp;</span>
+          <span class="badge badge-pill border {{if or (not .date_end) (gt 1 0) }}exp-fill{{end}}">&nbsp;</span>
+          {{ (sub (time .date_end) $today) }}
         </div>
         <div class="row h-50">
           <div class="col {{if lt $idx (sub $count 1)}}border-right{{end}}">&nbsp;</div>
